@@ -3,92 +3,77 @@ import openFile from "../../helpers/open-file.js";
 const data = openFile("./data/data.txt");
 const test = openFile("./data/test.txt");
 
-// arr of strings, strings are iterable so its kinda a matrix
-const scanRows = (stringArr) => {
+const iterateAndReturnRegexCount = (stringArr) => {
+  const ArrAsString = stringArr.join('');
+  const xmasRegex = /XMAS/g;
+  return [...ArrAsString.matchAll(xmasRegex)].length;
+};
+
+const scanRows = (rows) => {
   let count = 0;
-  // console.log(stringArr);
-  for (let i = 0; i < stringArr.length; i++) {
+  for (const row of rows) {
     // left to right
-    count += iterateAndReturnRegexCount(stringArr[i]);
+    const reversedRow = [...row].reverse();
+    count += iterateAndReturnRegexCount(row);
     // right to left
-    count += iterateAndReturnRegexCount(
-      stringArr[i].split("").reverse().join("")
-    );
+    count += iterateAndReturnRegexCount(reversedRow);
   }
   return count;
 };
 
 const transposeStringArr = (stringArr) => {
-  let newArr = [];
-  for (let i = 0; i < stringArr.length; i++) {
-    let colString = "";
-    for (let j = 0; j < stringArr.length; j++) {
-      colString += stringArr[j][i];
-    }
-    newArr.push(colString);
-    // console.log(colString);
-  }
-  return newArr;
-};
-
-const transposeDiagonal = (_stringArr) => {
-  const stringArr = [..._stringArr];
-  let newArr = [];
-  for (let i = 0; i < stringArr.length; i++) {
-    let colString = "";
-    for (let j = 0; j < stringArr[i].length; j++) {
-      if (!stringArr[i + j]) break;
-      colString += stringArr[i + j][j];
-      //console.log(colString);
-    }
-    newArr.push(colString);
-    //console.log(newArr);
-  } // KEEP!
-
-  // console.log(stringArr);
-
-  
-  stringArr.reverse();
-  const reflected = stringArr.map((str) => str.split('').reverse().join('')
+  return stringArr[0].map((_, colIndex) =>
+    stringArr.map((row) => row[colIndex]).reverse()
   );
-  //console.log('>>> ref', reflected)
+};
 
- // console.log(stringArr);
-
-  for (let i = 1; i < reflected.length; i++) {
-    let colString = "";
-    for (let j = 0; j < reflected[i].length; j++) {
-      if (!reflected[i + j]) break;
-      colString += reflected[i + j][j];
-      // console.log(colString);
+const transposeDiagonal = (_arr) => {
+  //console.log(_arr);
+  const arr = [..._arr];
+  arr.forEach((row) => row.reverse())
+  arr.reverse()
+  //console.log(arr);
+  let diagonals = [];
+  for (let i = 0; i < arr.length; i++) {
+    let diagonal = [];
+    for (let j = 0; j < arr[i].length; j++) {
+      if (!arr[i + j]) break;
+      diagonal.push(arr[i + j][j]);
     }
-    newArr.push(colString);
-    //console.log(newArr);
-  } // KEEP!
+    diagonals.push(diagonal);
+  }
 
-  return newArr;
+  for (let i = 1; i < arr[0].length; i++) {
+    let diagonal = [];
+    // console.log(arr[i])
+    for (let j = 0; j < arr.length; j++) {
+      if (!arr[j][i + j]) break;
+      diagonal.push(arr[j][i + j]);
+    }
+    diagonals.push(diagonal);
+  }
+  //console.log(diagonals)
+  return diagonals;
 };
 
-const iterateAndReturnRegexCount = (iterableString) => {
-  const xmasRegex = /XMAS/g;
-  return [...iterableString.matchAll(xmasRegex)].length;
-};
+
 let totalCount = 0;
-totalCount += scanRows(data);
-// console.log(JSON.stringify(test, null, 2));
-// console.log(totalCount);
-const columns = transposeStringArr(data);
+const rows = data.map((row)=> row.split(''));
+const columns = transposeStringArr(rows);
+//console.log(columns)
+const diagsDownAndRight = transposeDiagonal(rows);
+const diagsUpAndRight = transposeDiagonal(columns);
+//console.log(diagsUpAndRight);
+// console.log(diagsDownAndRight)
+totalCount += scanRows(rows);
 totalCount += scanRows(columns);
-// console.log(JSON.stringify(columns, null, 2));
-// console.log(scanRows(columns));
-const diagLeftRight = transposeDiagonal(data);
-// console.log(JSON.stringify(diagLeftRight, null, 2));
-const diagRightLeft = transposeDiagonal(columns);
-totalCount += scanRows(diagLeftRight);
-totalCount += scanRows(diagRightLeft);
+totalCount += scanRows(diagsDownAndRight);
+totalCount += scanRows(diagsUpAndRight);
 console.log(totalCount);
 
-//console.log(transposeDiagonal(test));
-// console.log(scanRows(test));
-// console.log(transposeArr(test));
+
+
 //2497 too high!
+// 2493 someone else's answer?
+//2468
+// 4:12 of elapsed time... jeez...
